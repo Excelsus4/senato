@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "default_timeout_sec": 180,
+  "adapters": {
+    "claude_readonly": {
+      "command": "claude",
+      "args": [
+        "-p",
+        "--tools",
+        "",
+        "--output-format",
+        "text"
+      ],
+      "input_mode": "stdin",
+      "output_mode": "stdout",
+      "timeout_sec": 180
+    },
+    "codex_readonly": {
+      "command": "codex",
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "-C",
+        "{temp_dir}",
+        "-s",
+        "read-only",
+        "--ephemeral",
+        "-o",
+        "{output_file}",
+        "-"
+      ],
+      "input_mode": "stdin",
+      "output_mode": "file",
+      "timeout_sec": 180
+    },
+    "agy_readonly": {
+      "command": "agy",
+      "args": [
+        "--sandbox",
+        "--disable-slash-commands",
+        "--output-format",
+        "text",
+        "-p",
+        "{prompt_text}"
+      ],
+      "input_mode": "arg",
+      "output_mode": "stdout",
+      "timeout_sec": 180
+    }
+  }
+}

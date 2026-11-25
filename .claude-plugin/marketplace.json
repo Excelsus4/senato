@@ -1,0 +1,32 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "excelsus4-senato",
+  "description": "Senato multi-seat trade-off deliberation plugin for Claude Code.",
+  "owner": {
+    "name": "Excelsus4",
+    "url": "https://github.com/Excelsus4"
+  },
+  "plugins": [
+    {
+      "name": "senato",
+      "description": "Multi-seat trade-off deliberation: asymmetric evidence packets, anonymized anti-conformity review, and a 4-field decision record.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Excelsus4",
+        "url": "https://github.com/Excelsus4"
+      },
+      "homepage": "https://github.com/Excelsus4/senato",
+      "repository": "https://github.com/Excelsus4/senato",
+      "license": "MIT",
+      "keywords": [
+        "deliberation",
+        "decision-record",
+        "multi-agent",
+        "ai-agents",
+        "claude-code",
+        "agent-skills"
+      ],
+      "source": "./"
+    }
+  ]
+}
