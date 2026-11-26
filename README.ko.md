@@ -55,13 +55,14 @@ Senato는 직함 역할극 대신 **상충 최적화 축**, **비대칭 근거 �
 2. **Stage 2 — 2계층 비대칭 컨텍스트 패킷 (`Block A + Block B`):**
    - **Block A *(공통 하드 불변식, ≤600토큰)*:** 전 좌석에 100% 동일 주입 — 결정 질문, 후보 옵션(항상 최소안 또는 `Defer` 기준선 포함), 절대 위반 불가 제약을 공유해 모든 좌석을 확정 제약에 고정하고 제약 이탈 반박을 줄입니다.
    - **Block B *(좌석별 비대칭 근거 슬라이스)*:** 각 좌석의 이해관계 렌즈에 해당하는 문서·코드·지표·조사 자료만 분리 주입하고, 모든 저장소 발췌문을 `<untrusted_repo_evidence path="...">` 경계 태그로 감싸 프롬프트 인젝션을 차단합니다.
-3. **Stage 3 — 병렬 블라인드 1라운드 → 조건부 익명 2라운드:**
+3. **Stage 3 — 병렬 블라인드 1라운드 → 조건부 익명 2라운드 → 분열 시 3라운드 오너 최종 변론:**
    - **Round 1 *(병렬 · 좌석당 ≤400단어)*:** 상호 열람 없이 `Stance`, 근거 인용(≤3건), 유력 대안의 치명적 결함, 그리고 **내 표를 바꿀 구체적 반증 조건(`Flip Condition`) 1~2개**를 제출합니다. 다항목 감사 시 유지 항목은 `- <ID>: keep` 1줄로 끝내는 패스트트랙을 지원합니다.
-   - **2라운드 에스컬레이션 게이트:** 미해결 고위험 충돌 없는 `3:0` 만장일치면 2라운드를 자동 생략하고, 표가 갈리거나 중대한 미해결 리스크가 있으면 2라운드로 넘어갑니다.
+   - **에스컬레이션 게이트:** 미해결 고위험 충돌 없는 `3:0` 만장일치면 2·3라운드를 자동 생략하고, 표가 갈리거나 중대한 미해결 리스크가 있으면 2라운드로 넘어갑니다.
    - **Round 2 *(익명 `Alpha / Beta / Gamma`)*:** 모델명·좌석명을 모두 지운 채 쟁점만 교차 검토합니다. 입장을 바꾸려면 **1라운드 `Flip Condition` 중 어느 항목이 어떤 근거로 반증되었는지** 명시해야 하며, 근거 없는 변심은 `Unexplained Drift`로 표기하고 원 소수의견을 끝까지 보존합니다.
-4. **Stage 4 — 4필드 결정 기록 & 인간 승인 경계:**
-   - 최상단 **출처 헤더(Provenance Header)**에 실행 모드(`Execution Mode`), 백엔드/정족수(`Backends / Quorum`), 컨텍스트 모드(`Context Mode`), 라운드(`Rounds`)를 투명하게 공개하며, 단일 호스트 실행 시 `NOT Cross-Model Independent` 배너를 강제 표기합니다.
-   - 프로덕션 코드를 전혀 수정하지 않은 채 4대 필수 필드(`What` — `STATUS: PROPOSED (Requires Explicit Human Approval)` 고정, `Why`, `기각 대안 및 보존된 소수의견`, `번복 조건 및 영향 범위`)로 정리해 최종 결정을 사람에게 넘깁니다.
+   - **Round 3 *(조건부 오너 최종 변론 · 좌석당 ≤200단어)*:** 2라운드 이후에도 표가 갈린 경우(`2:1`·`1:1:1`)에만 발동합니다. 억지 타협이나 입장 변경 없이 각 좌석이 표를 고정한 채 **오너를 향해 직접** "내 안을 택해 얻는 것", "의도적으로 포기·감수해야 하는 대가", "상대 안의 포기 비용이 더 큰 이유"를 제시합니다.
+4. **Stage 4 — 사용자 언어 현지화 4필드 결정 기록 & 인간 승인 경계:**
+   - 모든 제목·실행 정보·단일 호스트 비독립성 고지·승인 필요 문구를 사용자 언어로 자연스럽게 출력하고, 최상단 **`검토한 선택지`** 표로 모든 후보를 같은 해상도로 먼저 공개합니다.
+   - 프로덕션 코드를 전혀 수정하지 않은 채 4대 필수 섹션(`1. 채택안/분열 대조 — 얻는 것 vs 포기·감수하는 것 및 오너 선택 기준`, `2. 채택 이유 및 좌석별 판단`, `3. 기각 사유 및 보존된 소수의견`, `4. 번복 조건 및 영향 범위`)을 좌석 인용 근거만으로 정리해 최종 결정을 사람에게 넘깁니다.
 
 ---
 
@@ -79,18 +80,25 @@ Senato는 직함 역할극 대신 **상충 최적화 축**, **비대칭 근거 �
 <summary><strong>📄 4필드 결정 기록 출력 구조 미리보기</strong></summary>
 
 ```text
-Senato Verdict & Provenance
-- Recommended Option: Option C (v2.0 선언형 YAML 훅 전용)
-- Status: STATUS: PROPOSED (Requires Explicit Human Approval)
-- Execution Mode: Multi-CLI Cross-Model (또는 Single-Host Same-Model [NOT Cross-Model Independent])
-- Backends / Quorum: 3/3 | Context Mode: Dynamic Asymmetric Split | Rounds: R1 + Anonymized R2 (2:1)
+심의 결론
+- 결과: 2:1 의견 분열 — Option C(다수 권고) vs Option B(소수 대안 보존) (제안됨 · 사용자 명시 승인 필요)
+- 실행 정보: 다중 모델 교차 심의 (3/3 참여 · 코드 변경 없음) · 1R + 익명 2R + 3R 오너 최종 변론 (2:1) · 동적 비대칭 분리
 
-1. What: v2.0에서는 선언형 YAML 포매터·훅만 제공 (쉘 실행 및 .env/파일 보간 금지)
-2. Why: 14 ms 콜드스타트와 2인 CI 유지보수 한계를 지키며, 권고형 서브프로세스 샌드박스 환상을 차단
-3. Rejected Alternatives & Preserved Dissent:
-   - 기각: 내장 WASM (+28 MB, 140 crates); 서브프로세스 JSON-RPC (OS-UID 비밀키 노출)
+검토한 선택지
+- Option A (내장 WASM): 기각
+- Option B (서브프로세스 JSON-RPC): 소수 대안 (1/3)
+- Option C (선언형 YAML 훅 전용): 다수 권고 (2/3)
+
+1. 오너 선택 대조 (얻는 것 vs 포기·감수하는 것):
+   - Option C (다수안): 14 ms 콜드스타트·2인 CI 예산 확보 / 상태 기반 API 훅 포기(외부 쉘 래퍼 우회 위험 감수)
+   - Option B (소수안): Python/TS 상태 기반 플러그인 확보 / OS 강제 샌드박스 부재로 비밀키 노출 위험 감수
+   - 오너 선택 기준: 콜드스타트·보안 경계가 우선이면 Option C, 상태 기반 훅이 필수라면 Option B
+   - 공통 가드레일: v2.0 YAML 훅에서 쉘 실행 및 .env/파일 보간 금지
+2. 분열 이유 및 좌석별 판단: 보안·공수 좌석은 R2에서도 Option C 유지, 생태계 좌석은 쉘 래퍼 우회 반론 보존 (좌석별 근거 표)
+3. 기각 사유 및 보존된 소수의견:
+   - 탈락: Option A (+28 MB, 140 crates)
    - 보존된 소수의견: 정적 YAML만 제공하면 팀들이 통제 없는 외부 쉘 래퍼로 우회할 위험 잔존
-4. Reversal Criteria & Impact Scope:
+4. 번복 조건 및 영향 범위:
    - 활성 팀의 30% 초과(>30%)가 상태 기반 API 훅을 요구하고 OS 수준 샌드박스 또는 체크섬 신뢰 모델이 검증되면 Option B 재검토
 ```
 
@@ -104,7 +112,7 @@ Senato는 에이전트 1개만 있어도 바로 동작(**Tier 0**)하며, 여러
 
 | 티어 | 실행 방식 | 읽기 전용 가드 및 투명성 규약 |
 |---|---|---|
-| **Tier 0 *(기본)*** | 단일 호스트 격리 서브에이전트 (`Claude Code`, `Antigravity`, `Codex CLI`) | `fork` 없는 새 서브에이전트(프롬프트·서브에이전트 경계 기반 읽기 전용) + 상단 배너 강제: `Single-Host Same-Model [Asymmetric Context Split — NOT Cross-Model Independent]` |
+| **Tier 0 *(기본)*** | 단일 호스트 격리 서브에이전트 (`Claude Code`, `Antigravity`, `Codex CLI`) | `fork` 없는 새 서브에이전트(프롬프트·서브에이전트 경계 기반 읽기 전용) + 사용자 언어 상단 고지 강제(*"단일 호스트 동일 모델 — 비대칭 근거 분리, 교차 모델 독립 아님"*) |
 | **Tier 1 *(멀티-CLI 확장)*** | `skill/senato/scripts/dispatch.py` + 사용자 선언적 어댑터 설정 (`~/.config/senato/config.json`) | 좌석별 빈 임시 디렉터리(`cwd`) 실행, UTF-8 바이트/파일 직접 전송(쉘 파이프 제거), 알려진 쓰기/권한 우회 플래그 차단 목록(`FORBIDDEN_WRITE_FLAG`), 타임아웃 시 프로세스 그룹/트리 종료, 추적·미추적 Git 워크스페이스 변조 탐지(`git status` + `git diff HEAD`), 부분 실패 시 `Quorum: k/N` 정직 보고 |
 
 <details>

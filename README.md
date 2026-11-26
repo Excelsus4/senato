@@ -54,13 +54,14 @@ Senato replaces job-title roleplay with **competing optimization axes**, **asymm
 2. **Stage 2 — 2-Tier Asymmetric Context Packets (`Block A + Block B`):**
    - **Block A *(Shared Hard Invariants, ≤600 tokens)*:** Identical for every seat — exact question, candidate options (always including a minimal / `Defer` baseline), and non-negotiable constraints to ground every seat against settled invariants and reduce out-of-constraint objections.
    - **Block B *(Asymmetric Evidence Slice)*:** Disjoint per-seat repository files, specs, metrics, or research excerpts relevant only to that seat's stakeholder lens, wrapped in `<untrusted_repo_evidence path="...">` prompt-injection boundaries.
-3. **Stage 3 — Blind Parallel Round 1 → Conditional Anonymized Round 2:**
+3. **Stage 3 — Blind Parallel Round 1 → Conditional Anonymized Round 2 → Owner Closing Brief (If Still Split):**
    - **Round 1 *(Parallel, ≤400 words/seat)*:** Zero cross-talk. Each seat outputs `Stance`, ≤3 concrete `Lens Evidence` citations, `Fatal Flaw of Leading Alternative`, and **1–2 falsifiable `Flip Conditions`**. Multi-item audits support a token-saving 1-line `- <ID>: keep` fast-track.
-   - **Escalation Gate:** A clean `3:0` unanimous vote with zero unresolved high-severity invariant conflicts skips Round 2 automatically. Any split or unresolved severe risk triggers Round 2.
+   - **Escalation Gate:** A clean `3:0` unanimous vote with zero unresolved high-severity invariant conflicts skips Round 2 and Round 3 automatically. Any split or unresolved severe risk triggers Round 2.
    - **Round 2 *(Anonymized `Alpha / Beta / Gamma`)*:** Strips model names and seat labels. A seat may switch its stance **only** by naming which Round 1 `Flip Condition` was refuted by concrete evidence; unsupported capitulation is flagged as `Unexplained Drift` and original minority dissent is preserved.
-4. **Stage 4 — 4-Field Decision Record & Explicit Human Approval Gate:**
-   - Opens with an honest **Provenance Header** (`Execution Mode`, `Backends / Quorum`, `Context Mode`, `Rounds`) — explicitly flagging single-host runs as `NOT Cross-Model Independent`.
-   - Outputs four mandatory sections (`What` marked `STATUS: PROPOSED (Requires Explicit Human Approval)`, `Why`, `Rejected Alternatives & Preserved Dissent`, `Reversal Criteria & Impact Scope`) while leaving production code untouched.
+   - **Round 3 *(Conditional Owner Closing Brief, ≤200 words/seat)*:** Triggered **only** if Round 2 still ends in a split (`2:1` / `1:1:1`). Stances stay locked (no watered-down compromise); each seat appeals directly to the human owner stating what you gain, the honest price you explicitly give up/accept, and why the rival option's sacrifice is worse.
+4. **Stage 4 — Localized 4-Field Decision Record & Explicit Human Approval Gate:**
+   - Renders all human-facing headings, provenance details (explicitly disclosing single-host runs as non-cross-model independent), and approval notices naturally in the user's language, followed immediately by an **`Options Considered`** summary table so every candidate is visible at equal resolution.
+   - Outputs four mandatory sections (`What` — leading with gains vs. explicit sacrifices, or a 1:1 Majority vs. Minority comparison table + Owner Decision Guide on splits; `Why`; `Rejected Alternatives & Preserved Dissent`; `Reversal Criteria & Impact Scope`) grounded strictly in seat citations while leaving production code untouched.
 
 ---
 
@@ -78,17 +79,24 @@ Senato replaces job-title roleplay with **competing optimization axes**, **asymm
 <summary><strong>📄 Inspect the 4-Field Decision Record Output Format</strong></summary>
 
 ```text
-Senato Verdict & Provenance
-- Recommended Option: Option C (Declarative YAML hooks for v2.0)
-- Status: STATUS: PROPOSED (Requires Explicit Human Approval)
-- Execution Mode: Multi-CLI Cross-Model (or Single-Host Same-Model [NOT Cross-Model Independent])
-- Backends / Quorum: 3/3 | Context Mode: Dynamic Asymmetric Split | Rounds: R1 + Anonymized R2 (2:1)
+Deliberation Verdict
+- Verdict: 2:1 Split — Option C (Majority Recommended) vs. Option B (Minority Preserved) (Proposed — Requires Explicit Human Approval)
+- Execution Info: Multi-CLI Cross-Model (3/3, workspace unchanged) · R1 + Anonymized R2 + R3 Owner Closing Brief (2:1) · Dynamic Asymmetric Split
 
-1. What: Ship declarative YAML formatters/hooks in v2.0 (banning shell exec & .env/file interpolation)
-2. Why: Preserves 14 ms cold start and 2-maintainer CI budget while avoiding advisory-only subprocess sandboxes
+Options Considered
+- Option A (Embedded WASM): Rejected
+- Option B (Subprocess JSON-RPC): Minority Option (1/3)
+- Option C (Declarative YAML hooks only): Majority Recommended (2/3)
+
+1. What (Side-by-Side Trade-Offs & Owner Decision Guide):
+   - Option C (Majority): Gain 14 ms cold start & 2-maintainer CI budget; explicitly give up stateful API hooks (shadow-IT wrapper risk)
+   - Option B (Minority): Gain Python/TS stateful plugins; explicitly accept OS-UID secret exposure without an enforced sandbox
+   - Owner Guide: Pick Option C to protect cold start/security boundary; pick Option B if stateful hooks outweigh advisory sandbox risk
+   - Guardrails: Ban shell exec & .env/file interpolation in v2.0 YAML hooks
+2. Why: Security + Scope seats held Option C after R2; Ecosystem seat preserved unrefuted wrapper-drift dissent (seat table + evidence slices)
 3. Rejected Alternatives & Preserved Dissent:
-   - Rejected: Embedded WASM (+28 MB, 140 crates); Subprocess JSON-RPC (OS-UID secret exposure)
-   - Preserved Minority Dissent: Static YAML may push teams toward ungoverned external shell wrappers
+   - Eliminated: Option A (+28 MB, 140 crates)
+   - Preserved Dissent: Static YAML may push teams toward ungoverned external shell wrappers
 4. Reversal Criteria & Impact Scope:
    - Revisit Option B if >30% of active teams request stateful API hooks AND an OS-enforced sandbox or opt-in checksum trust model is vetted
 ```
@@ -103,7 +111,7 @@ Senato works out of the box on a single agent host (**Tier 0**) and upgrades cle
 
 | Tier | Execution Mode | Read-Only Guards & Honest Disclosure |
 |---|---|---|
-| **Tier 0 *(Default)*** | Single-host isolated subagents (`Claude Code`, `Antigravity`, `Codex CLI`) | Fresh non-fork subagents (read-only by prompt/subagent boundary) + mandatory provenance banner: `Single-Host Same-Model [Asymmetric Context Split — NOT Cross-Model Independent]` |
+| **Tier 0 *(Default)*** | Single-host isolated subagents (`Claude Code`, `Antigravity`, `Codex CLI`) | Fresh non-fork subagents (read-only by prompt/subagent boundary) + mandatory localized provenance disclosure (*"Single-Host Same-Model — Asymmetric Context Split, NOT Cross-Model Independent"*) |
 | **Tier 1 *(Opt-In Multi-CLI)*** | `skill/senato/scripts/dispatch.py` + user declarative JSON config (`~/.config/senato/config.json`) | Empty temp `cwd` per seat, UTF-8 byte/file transport (zero shell piping), known write/bypass flag denylist (`FORBIDDEN_WRITE_FLAG`), subprocess group/tree termination on timeout, tracked/untracked git mutation detection (`git status` + `git diff HEAD`), and honest `Quorum: k/N` reporting |
 
 <details>

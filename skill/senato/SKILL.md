@@ -31,7 +31,7 @@ Asking one model to "act as Architect, Marketer, and PM" over identical context 
 ### Step 1 — Load Configuration Overlay (4-Layer Precedence)
 
 Resolve rules in strict precedence order (highest to lowest):
-1. **Invocation arguments:** One-off overrides (e.g., batch `keep` mode, `--single-host`, seat count, max rounds).
+1. **Invocation arguments:** One-off overrides (e.g., batch `keep` mode, `--single-host`, seat count, `--no-closing-brief` / `--max-rounds 2`).
 2. **Project-local rules (optional):** Check the workspace root in order (first match wins; read `AGENTS.md` alongside if present):
    - `<workspace>/.agents/senato_rules.md`
    - `<workspace>/.agents/council_rules.md`
@@ -41,7 +41,7 @@ Resolve rules in strict precedence order (highest to lowest):
 3. **User machine config (optional):** `$SENATO_CONFIG` > `~/.config/senato/config.json` > `~/.config/council/config.json` (`%USERPROFILE%\.config\senato\config.json` on Windows) for declarative multi-CLI adapters (see [adapter_contract.md](./references/adapter_contract.md)).
 4. **Public Core defaults:** Host-native isolated subagents (`Tier 0`), orchestrator-selected 3-axis seats, and chat-only or explicit `docs/senato/<YYYY-MM-DD>_<topic>/` output.
 
-**Record `{USER_LANGUAGE}`** matching the user's request language. Render all deliberation packets and final synthesis naturally in `{USER_LANGUAGE}` while preserving exact file paths, symbols, and status tags.
+**Record `{USER_LANGUAGE}`** matching the user's request language. Render **ALL human-facing headings, labels, approval-status wording, independence disclosures, missing-evidence notices, and prose** naturally in `{USER_LANGUAGE}`. Keep verbatim **ONLY technical identifiers** (file paths, line numbers, code symbols, CLI/model/adapter names, and Option/Seat IDs) — never leak raw English headings or duplicated labels (such as `Status: STATUS:`) into non-English responses.
 
 ---
 
@@ -66,10 +66,10 @@ Consult [seat_selection_guide.md](./references/seat_selection_guide.md) and [dec
 
 ### Step 3 — Choose Execution Tier & Enforce Read-Only Isolation
 
-| Tier | Mode | When Used | Mandatory Provenance Disclosure |
+| Tier | Mode | When Used | Mandatory Provenance Disclosure *(render in `{USER_LANGUAGE}`)* |
 |---|---|---|---|
-| **Tier 1** | **Multi-CLI Cross-Model** | User config declares 2+ valid, available external CLI adapters (`dispatch.py --doctor` reports `usable >= 2`) and `scripts/dispatch.py` succeeds | `Execution Mode: Multi-CLI Cross-Model (<adapters>)` |
-| **Tier 0** | **Single-Host Isolated Subagents** | No multi-CLI config, `--single-host` requested, or single-agent environment | `Execution Mode: Single-Host Same-Model [Asymmetric Context Split — NOT Cross-Model Independent]` |
+| **Tier 1** | **Multi-CLI Cross-Model** | User config declares 2+ valid, available external CLI adapters (`dispatch.py --doctor` reports `usable >= 2`) and `scripts/dispatch.py` succeeds | Multi-CLI Cross-Model (`<adapters>`) |
+| **Tier 0** | **Single-Host Isolated Subagents** | No multi-CLI config, `--single-host` requested, or single-agent environment | Single-Host Same-Model — Asymmetric Context Split, NOT Cross-Model Independent |
 
 **Hard Isolation & Honest Failure Rules:**
 - **Never fake cross-model independence:** If Tier 1 is configured and an adapter fails (timeout, non-zero exit, quota error), do NOT silently fabricate a seat or swap in the host model without disclosure. Report exact `Quorum: X/N` with the failed seat's error; only fall back to Tier 0 if requested or with an explicit downgraded provenance banner.
@@ -93,30 +93,40 @@ Launch all seats **in parallel**. Seats MUST NOT see each other's drafts. Every 
 
 ---
 
-### Step 5 — Round 2 Escalation Gate & Anonymized Cross-Review (Conditional)
+### Step 5 — Round 2 Cross-Review & Conditional Round 3 Owner Closing Brief
 
 Evaluate Round 1 deterministically:
-- **Skip Round 2:** Unanimous stance (`N:0`) **AND** zero unresolved high-severity invariant conflicts or fatal flaws raised. Proceed directly to Step 6.
+- **Skip Round 2 & Round 3:** Unanimous stance (`N:0`) **AND** zero unresolved high-severity invariant conflicts or fatal flaws raised. Proceed directly to Step 6.
 - **Trigger Round 2:** Split vote (`2:1`, `1:1:1`, etc.) **OR** unanimous vote accompanied by a high-severity unaddressed risk.
 
 When Round 2 triggers:
 1. **Anonymize Round 1 positions:** Strip all model names, CLI names, and seat titles; label them strictly `Position Alpha`, `Position Beta`, `Position Gamma`.
 2. **Distribute ONLY the contested points** + anonymized Round 1 summaries to every seat in parallel.
 3. **Anti-Conformity Rule:** A seat may change its stance ONLY by citing **which exact Round 1 `Flip Condition` was refuted by which specific evidence** from another position. Unsupported agreement (*"I agree with the majority"*) MUST be flagged by the synthesizer as `Unexplained Drift`, and the original unrefuted minority objection MUST be preserved in the final synthesis.
-4. **Hard Round Cap:** Stop after Round 2. If still split, escalate the clear majority + preserved minority dissent to the human owner for the final tie-break.
+4. **Conditional Round 3 — Owner-Facing Closing Brief (ONLY if Round 2 Still Splits):**
+   - If Round 2 converges (`N:0`), skip Round 3 and proceed directly to Step 6.
+   - If Round 2 **still ends in a split** (`2:1`, `1:1:1`, etc.) and `--no-closing-brief` / `--max-rounds 2` was not requested, run **one parallel Round 3 (`<= 200` words / seat)** using Template 2B in [decision_record_template.md](./references/decision_record_template.md):
+     - **Stance locked (zero compromise theater):** Do NOT ask seats to negotiate a watered-down hybrid or switch votes.
+     - **Direct appeal to the human owner:** Knowing the council remains divided, each seat writes directly for the owner stating (a) what the owner gains by choosing its option, (b) the honest price the owner must explicitly give up or accept, and (c) why the rival split option's sacrifice is worse.
+5. **Hard Round Cap:** Stop after Round 3 (or Round 2 when converged / `--max-rounds 2`). Escalate the side-by-side majority vs. minority case to the human owner for the final tie-break.
 
 ---
 
-### Step 6 — Synthesis, Provenance Header & Human Approval Boundary
+### Step 6 — Synthesis, Localization & Human Approval Boundary
 
-Synthesize the outcome using [decision_record_template.md](./references/decision_record_template.md):
-1. **Conclusion-First Provenance Header:** State `Recommended Option`, `Status` (`STATUS: PROPOSED (Requires Explicit Human Approval)`), `Execution Mode` (including the mandatory `NOT Cross-Model Independent` tag for Tier 0), `Backends / Quorum`, `Context Mode` (with exact per-seat Block B slices), and `Rounds`.
+Synthesize the outcome using Template 3 in [decision_record_template.md](./references/decision_record_template.md), rendering **every human-facing heading, provenance label, approval notice, and independence banner naturally in `{USER_LANGUAGE}`**:
+1. **Concise Conclusion-First Header & `Options Considered` Table:**
+   - Open with the verdict (`Recommended Option` or `Split Verdict` + localized *"Proposed — Requires Explicit Human Approval"* notice without duplicating labels), a 1-line summary, and a compact execution-info line (execution mode — including the localized *"Single-Host Same-Model — Asymmetric Context Split, NOT Cross-Model Independent"* banner for Tier 0 — backends/quorum, rounds, and context mode).
+   - Immediately follow with an **`Options Considered`** summary table (`Option | Core Direction | Outcome`, 1 line per candidate) exposing every `Block A` candidate at equal resolution before Section 1.
 2. **4-Field Decision Record (Mandatory Structure):**
-   - **Numeric Grounding & Plain-Prose Audit:** Before finalizing, cross-check every metric, dollar figure, percentage, and cohort label against the exact seat citation that introduced it (never conflate two seats' figures into a composite label without verifying scope), and translate internal mechanics (flip conditions, drift checks) into clean decision prose rather than leaking raw internal labels (`R1 Flip Condition 1`, `unexplained drift: 0`) into Sections 1–4.
-   - **What:** Recommended decision + concrete guardrails, explicitly tagged `STATUS: PROPOSED (Requires Explicit Human Approval)`. Never record a Senato recommendation as a confirmed owner decision until the human explicitly approves it.
-   - **Why:** Grounded rationale, cited evidence, and vote summary.
-   - **Rejected Alternatives & Preserved Dissent:** Every rejected option plus any unrefuted minority objection (including any `Unexplained Drift` recovery).
-   - **Reversal Criteria & Impact Scope:** Exact measurable conditions that should overturn this decision later, and the files/docs affected.
+   - **Numeric Grounding, Zero-Fabrication & Plain-Prose Audit:** Before finalizing, cross-check every metric, dollar figure, percentage, cohort label, benefit, and sacrifice against exact seat citations (never conflate figures across seats and never invent ungrounded pros/cons — if seats did not establish a gain or cost, state *"Not established by seats"* in `{USER_LANGUAGE}`). Translate internal protocol mechanics into plain prose rather than leaking raw internal labels (`R1 Flip Condition 1`, `unexplained drift: 0`) into Sections 1–4.
+   - **1. What (Adopted Option / Split Comparison, Trade-off & Guardrails):**
+     - *Unanimous / Converged:* State **What it is**, **What you gain**, and **What you explicitly give up / accept** first (about 5 lines max), then list concrete actions and guardrails.
+     - *Split (`2:1` / `1:1:1`):* Lead with a **1:1 Majority vs. Minority comparison table** (`What it does`, `What you gain`, `What you explicitly give up / accept`) grounded in Round 3 closing briefs (or R1/R2 citations when R3 is skipped), followed by an **Owner Decision Guide** framed by which sacrifice the owner is willing to accept, shared guardrails, and concrete next actions.
+     - Never record a Senato recommendation as a confirmed owner decision until the human explicitly approves it.
+   - **2. Why (Winning Rationale / Split Fault Line & Seat Summary):** Open with a 1–2 sentence synthesis of the core trade-off or split fault line above the seat table (`Axis (Backend) | R1 | R2 | Evidence Slice | Key Judgment`). Placing per-seat evidence slices in this table keeps the top header compact.
+   - **3. Rejected Alternatives & Preserved Dissent:** Concise elimination reasons for rejected options (without repeating Option definitions from the top table) plus preserved unrefuted minority objections (including any `Unexplained Drift` recovery).
+   - **4. Reversal Criteria & Impact Scope:** Exact measurable conditions that should overturn or switch this decision later, and the files/docs affected.
 3. **Artifact & Approval Boundary:**
    - During deliberation, never edit production code or commit.
    - Write deliberation artifacts/decision-log entries ONLY to the project's configured artifact path (or chat-only if no artifact path is configured or requested).
@@ -135,5 +145,5 @@ Synthesize the outcome using [decision_record_template.md](./references/decision
 - [ ] Seats represent genuinely competing optimization axes with explicit falsification burdens (zero job-title roleplay).
 - [ ] Every seat received identical Block A hard invariants + distinct Block B evidence wrapped in `<untrusted_repo_evidence>` tags.
 - [ ] Round 1 ran in parallel without cross-talk, enforced `<= 400` words and explicit `Flip Conditions`, and applied 1-line `keep` fast-track for batch audits.
-- [ ] Round 2 skipped cleanly on unanimous conflict-free R1, or ran anonymized (`Alpha/Beta/Gamma`) with `Unexplained Drift` protection.
-- [ ] Synthesis verified every cited metric against its originating seat, kept internal jargon out of Sections 1–4, disclosed exact execution mode and quorum, marked `STATUS: PROPOSED (Requires Explicit Human Approval)`, and left production code unmodified.
+- [ ] Round 2 skipped cleanly on unanimous conflict-free R1, or ran anonymized (`Alpha/Beta/Gamma`) with `Unexplained Drift` protection; if R2 still split (and `--max-rounds 2` / `--no-closing-brief` was not set), locked-stance Round 3 Owner Closing Brief ran without forcing compromise.
+- [ ] Final synthesis exposed all `Block A` candidates in `Options Considered`, placed adopted-option (or split 1:1) gains and explicit sacrifices ahead of rejected options, grounded every metric/claim in seat citations (marking gaps rather than inventing pros/cons), localized all human-facing headings/labels/status wording into `{USER_LANGUAGE}`, and left production code unmodified.
